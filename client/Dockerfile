@@ -12,6 +12,9 @@ RUN npm install
 
 COPY client ./client
 
+# Compilar shared primero (Vite/Rollup necesita el dist, no los .ts fuente)
+RUN cd packages/shared && npx tsc
+
 RUN cd client && npm run build
 
 # ── Stage 2: Nginx sirve los estáticos ───────────────────────────────────────

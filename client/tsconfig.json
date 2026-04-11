@@ -13,10 +13,7 @@
     "jsx": "react-jsx",
     "strict": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "paths": {
-      "@trazabilidad/shared": ["../packages/shared/src/index.ts"]
-    }
+    "noUnusedParameters": false
   },
   "include": ["src"]
 }
