@@ -1,0 +1,29 @@
+node_modules
+*/node_modules
+**/node_modules
+
+# Build outputs
+dist
+*/dist
+client/dist
+server/dist
+packages/shared/dist
+
+# Dev/local files
+.env
+.env.production
+*.env.local
+.DS_Store
+*.log
+
+# Prisma generated (se genera durante docker build)
+server/prisma/generated
+
+# IDE y herramientas locales
+.vscode
+.claude
+.git
+*.md
+
+# Tests
+coverage

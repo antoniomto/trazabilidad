@@ -1,0 +1,16 @@
+{
+  "name": "trazabilidad",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["packages/*", "server", "client"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=server && npm run build --workspace=client",
+    "db:migrate": "npm run db:migrate --workspace=server",
+    "db:seed": "npm run db:seed --workspace=server",
+    "db:studio": "npm run db:studio --workspace=server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
