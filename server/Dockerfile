@@ -21,10 +21,8 @@ RUN cd packages/shared && npx tsc
 RUN cd server && npx prisma generate && npm run build
 
 # ── Stage 2: Runtime ─────────────────────────────────────────────────────────
-FROM node:20-alpine AS runtime
+FROM node:20-slim AS runtime
 WORKDIR /app/server
-
-RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
 
