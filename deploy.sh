@@ -1,37 +1,40 @@
 #!/bin/bash
 set -e
 
+ROOT=/root/trazabilidad
+cd $ROOT
+
 echo "=== Deploy Trazabilidad ==="
 
 # Instalar Nginx si no está
 if ! command -v nginx &> /dev/null; then
-  echo "Instalando Nginx..."
   apt-get install -y nginx
 fi
 
-# Ir al directorio del proyecto
-cd ~/trazabilidad
-
 # Instalar dependencias
 echo "Instalando dependencias..."
-rm -rf node_modules
+rm -rf node_modules package-lock.json
 npm install
 
 # Compilar shared
 echo "Compilando shared..."
-cd packages/shared && npx tsc && cd ../..
+npx tsc -p packages/shared/tsconfig.json
 
 # Compilar servidor
 echo "Compilando servidor..."
-cd server && npx prisma generate && npm run build && cd ..
+cd $ROOT/server
+npx prisma generate
+npm run build
 
 # Aplicar schema SQLite
-echo "Aplicando schema de base de datos..."
-cd server && DATABASE_URL="file:$(pwd)/data/prod.db" npx prisma db push --skip-generate && cd ..
+echo "Aplicando base de datos..."
+mkdir -p $ROOT/server/data
+DATABASE_URL="file:$ROOT/server/data/prod.db" npx prisma db push --skip-generate
 
 # Compilar cliente
 echo "Compilando cliente..."
-cd client && npm run build && cd ..
+cd $ROOT/client
+npm run build
 
 # Configurar Nginx
 echo "Configurando Nginx..."
@@ -39,7 +42,7 @@ cat > /etc/nginx/sites-available/trazabilidad << EOF
 server {
     listen 80;
     server_name _;
-    root $(pwd)/client/dist;
+    root $ROOT/client/dist;
     index index.html;
 
     location /api/v1/alerts/stream {
@@ -68,20 +71,20 @@ ln -sf /etc/nginx/sites-available/trazabilidad /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl restart nginx
 
-# Iniciar o reiniciar con PM2
+# Iniciar con PM2
 echo "Iniciando servidor con PM2..."
-mkdir -p server/data
+cd $ROOT
 
 if pm2 describe trazabilidad > /dev/null 2>&1; then
   pm2 restart trazabilidad
 else
-  pm2 start server/dist/index.js \
-    --name trazabilidad \
-    --env production
+  pm2 start server/dist/index.js --name trazabilidad
 fi
 
 pm2 save
 
 echo ""
 echo "=== Deploy completado ==="
-echo "Abre: http://$(curl -s ifconfig.me)/api/health"
+echo "Verificando..."
+sleep 3
+curl -s http://localhost/api/health || echo "Aun iniciando, espera unos segundos"

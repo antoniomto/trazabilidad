@@ -7,52 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  OPERATOR
-  SUPERVISOR
-  ADMIN
-}
-
-enum LotStatus {
-  OPEN
-  IN_PROGRESS
-  CLOSED
-  RELEASED
-  QUARANTINE
-}
-
-enum PhaseStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  SKIPPED
-}
-
-enum AlertType {
-  PARAMETER_OUT_OF_RANGE
-  PHASE_OVERDUE
-  LOT_EXPIRING
-  MANUAL
-}
-
-enum AlertSeverity {
-  INFO
-  WARNING
-  CRITICAL
-}
-
-enum AlertStatus {
-  ACTIVE
-  ACKNOWLEDGED
-  RESOLVED
-}
-
 model User {
   id           String   @id @default(uuid())
   name         String
   email        String   @unique
   passwordHash String
-  role         UserRole @default(OPERATOR)
+  role         String   @default("OPERATOR")
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 
@@ -104,7 +64,7 @@ model Lot {
   id           String    @id @default(uuid())
   lotNumber    String    @unique
   productId    String
-  status       LotStatus @default(OPEN)
+  status       String    @default("OPEN")
   startDate    DateTime  @default(now())
   endDate      DateTime?
   batchSize    Float
@@ -147,12 +107,12 @@ model LotRawMaterial {
 }
 
 model ProductionPhase {
-  id              String      @id @default(uuid())
+  id              String    @id @default(uuid())
   lotId           String
   templateId      String?
   name            String
   orderIndex      Int
-  status          PhaseStatus @default(PENDING)
+  status          String    @default("PENDING")
   startedAt       DateTime?
   completedAt     DateTime?
   mermaKg         Float?
@@ -161,7 +121,7 @@ model ProductionPhase {
   operatorId      String?
   supervisorId    String?
   notes           String?
-  createdAt       DateTime    @default(now())
+  createdAt       DateTime  @default(now())
 
   lot        Lot                   @relation(fields: [lotId], references: [id])
   template   ProductPhaseTemplate? @relation(fields: [templateId], references: [id])
@@ -194,18 +154,18 @@ model PhaseParameter {
 }
 
 model Alert {
-  id               String        @id @default(uuid())
+  id               String    @id @default(uuid())
   lotId            String
   phaseId          String?
   parameterId      String?
-  type             AlertType
-  severity         AlertSeverity
+  type             String
+  severity         String
   message          String
-  status           AlertStatus   @default(ACTIVE)
+  status           String    @default("ACTIVE")
   acknowledgedById String?
   acknowledgedAt   DateTime?
   acknowledgeNote  String?
-  createdAt        DateTime      @default(now())
+  createdAt        DateTime  @default(now())
 
   lot            Lot              @relation(fields: [lotId], references: [id])
   phase          ProductionPhase? @relation(fields: [phaseId], references: [id])
@@ -214,5 +174,4 @@ model Alert {
 
   @@index([status])
   @@index([lotId])
-  @@index([severity, status])
 }
