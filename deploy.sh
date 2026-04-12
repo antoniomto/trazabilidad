@@ -14,8 +14,8 @@ cd ~/trazabilidad
 
 # Instalar dependencias
 echo "Instalando dependencias..."
-npm install --ignore-scripts
-npm rebuild
+rm -rf node_modules
+npm install
 
 # Compilar shared
 echo "Compilando shared..."
