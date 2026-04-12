@@ -24,6 +24,8 @@ RUN cd server && npx prisma generate && npm run build
 FROM node:20-alpine AS runtime
 WORKDIR /app/server
 
+RUN apk add --no-cache openssl
+
 ENV NODE_ENV=production
 
 # Copiar node_modules (ya incluye @prisma/client generado)
