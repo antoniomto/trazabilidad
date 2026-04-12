@@ -1,25 +1,5 @@
 services:
 
-  # ── Base de datos ────────────────────────────────────────────────────────────
-  postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-trazabilidad}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    # En producción NO exponer el puerto al exterior
-    # En desarrollo local descomentar la línea siguiente:
-    # ports:
-    #   - '5432:5432'
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   # ── Servidor Node.js ─────────────────────────────────────────────────────────
   server:
     build:
@@ -27,20 +7,15 @@ services:
       dockerfile: server/Dockerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${DATABASE_URL:-file:./prod.db}
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       PORT: ${PORT:-3001}
       NODE_ENV: ${NODE_ENV:-production}
       PLANT_TIMEZONE: ${PLANT_TIMEZONE:-America/Mexico_City}
       ALLOWED_ORIGIN: ${ALLOWED_ORIGIN}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    # En producción el puerto 3001 NO se expone directamente (Nginx lo proxea)
-    # En desarrollo local descomentar:
-    # ports:
-    #   - '3001:3001'
+    volumes:
+      - dbdata:/app/server/data
 
   # ── Frontend + Nginx ─────────────────────────────────────────────────────────
   nginx:
@@ -54,4 +29,4 @@ services:
       - server
 
 volumes:
-  pgdata:
+  dbdata:

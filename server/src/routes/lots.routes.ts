@@ -34,7 +34,17 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const lot = await getLotDetail(req.params.id)
     if (!lot) return res.status(404).json({ error: 'Lote no encontrado' })
-    res.json(lot)
+    // SQLite stores expectedParams as JSON string — parse before sending
+    const lotParsed = {
+      ...lot,
+      productionPhases: lot.productionPhases.map((phase) => ({
+        ...phase,
+        template: phase.template
+          ? { ...phase.template, expectedParams: JSON.parse(phase.template.expectedParams as string) }
+          : null,
+      })),
+    }
+    res.json(lotParsed)
   } catch {
     res.status(500).json({ error: 'Error al obtener lote' })
   }

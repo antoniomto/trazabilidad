@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -56,11 +56,11 @@ model User {
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 
-  lotsCreated      Lot[]             @relation("LotCreator")
-  lotsReleased     Lot[]             @relation("LotReleaser")
-  phasesOperated   ProductionPhase[] @relation("PhaseOperator")
-  phasesSupervsed  ProductionPhase[] @relation("PhaseSupervisor")
-  paramsRecorded   PhaseParameter[]
+  lotsCreated        Lot[]             @relation("LotCreator")
+  lotsReleased       Lot[]             @relation("LotReleaser")
+  phasesOperated     ProductionPhase[] @relation("PhaseOperator")
+  phasesSupervsed    ProductionPhase[] @relation("PhaseSupervisor")
+  paramsRecorded     PhaseParameter[]
   alertsAcknowledged Alert[]
 }
 
@@ -76,13 +76,13 @@ model Product {
 }
 
 model ProductPhaseTemplate {
-  id             String  @id @default(uuid())
-  productId      String
-  name           String
-  orderIndex     Int
-  expectedParams Json    @default("[]")
+  id              String  @id @default(uuid())
+  productId       String
+  name            String
+  orderIndex      Int
+  expectedParams  String  @default("[]")
   hasQualityCheck Boolean @default(false)
-  maxDurationMin Int?
+  maxDurationMin  Int?
 
   product          Product           @relation(fields: [productId], references: [id])
   productionPhases ProductionPhase[]
@@ -101,20 +101,20 @@ model RawMaterial {
 }
 
 model Lot {
-  id          String    @id @default(uuid())
-  lotNumber   String    @unique
-  productId   String
-  status      LotStatus @default(OPEN)
-  startDate   DateTime  @default(now())
-  endDate     DateTime?
-  batchSize   Decimal   @db.Decimal(10, 3)
-  batchUnit   String
-  notes       String?
-  createdById String
+  id           String    @id @default(uuid())
+  lotNumber    String    @unique
+  productId    String
+  status       LotStatus @default(OPEN)
+  startDate    DateTime  @default(now())
+  endDate      DateTime?
+  batchSize    Float
+  batchUnit    String
+  notes        String?
+  createdById  String
   releasedById String?
-  releasedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  releasedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   product          Product           @relation(fields: [productId], references: [id])
   createdBy        User              @relation("LotCreator", fields: [createdById], references: [id])
@@ -129,16 +129,16 @@ model Lot {
 }
 
 model LotRawMaterial {
-  id             String   @id @default(uuid())
-  lotId          String
-  rawMaterialId  String
-  quantity       Decimal  @db.Decimal(10, 3)
-  unit           String
-  supplierLot    String
-  internalLot    String
-  chlorineConc   Decimal? @db.Decimal(6, 2)
-  receivedAt     DateTime @default(now())
-  notes          String?
+  id            String   @id @default(uuid())
+  lotId         String
+  rawMaterialId String
+  quantity      Float
+  unit          String
+  supplierLot   String
+  internalLot   String
+  chlorineConc  Float?
+  receivedAt    DateTime @default(now())
+  notes         String?
 
   lot         Lot         @relation(fields: [lotId], references: [id])
   rawMaterial RawMaterial @relation(fields: [rawMaterialId], references: [id])
@@ -155,7 +155,7 @@ model ProductionPhase {
   status          PhaseStatus @default(PENDING)
   startedAt       DateTime?
   completedAt     DateTime?
-  mermaKg         Decimal?    @db.Decimal(10, 3)
+  mermaKg         Float?
   qualityApproved Boolean?
   qualityNote     String?
   operatorId      String?
@@ -178,7 +178,7 @@ model PhaseParameter {
   id           String   @id @default(uuid())
   phaseId      String
   key          String
-  value        Decimal  @db.Decimal(12, 4)
+  value        Float
   unit         String
   recordedAt   DateTime @default(now())
   recordedById String
@@ -207,10 +207,10 @@ model Alert {
   acknowledgeNote  String?
   createdAt        DateTime      @default(now())
 
-  lot             Lot              @relation(fields: [lotId], references: [id])
-  phase           ProductionPhase? @relation(fields: [phaseId], references: [id])
-  parameter       PhaseParameter?  @relation(fields: [parameterId], references: [id])
-  acknowledgedBy  User?            @relation(fields: [acknowledgedById], references: [id])
+  lot            Lot              @relation(fields: [lotId], references: [id])
+  phase          ProductionPhase? @relation(fields: [phaseId], references: [id])
+  parameter      PhaseParameter?  @relation(fields: [parameterId], references: [id])
+  acknowledgedBy User?            @relation(fields: [acknowledgedById], references: [id])
 
   @@index([status])
   @@index([lotId])

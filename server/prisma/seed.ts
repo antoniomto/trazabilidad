@@ -168,7 +168,7 @@ async function main() {
         orderIndex: phase.orderIndex,
         hasQualityCheck: phase.hasQualityCheck,
         maxDurationMin: phase.maxDurationMin,
-        expectedParams: phase.expectedParams as any,
+        expectedParams: JSON.stringify(phase.expectedParams),
       },
     })
   }

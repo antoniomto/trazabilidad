@@ -61,7 +61,9 @@ export async function savePhaseParameters(
   })
 
   // Evaluate alerts against expected params from template
-  const expectedParams = (phase.template?.expectedParams as any[]) ?? []
+  const expectedParams: any[] = phase.template?.expectedParams
+    ? JSON.parse(phase.template.expectedParams as string)
+    : []
   const paramsList = createdParams.map((p, i) => ({
     id: p.id,
     key: p.key,

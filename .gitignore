@@ -10,3 +10,7 @@ dist/
 .DS_Store
 *.log
 prisma/generated/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
